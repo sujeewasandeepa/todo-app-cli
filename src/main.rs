@@ -130,6 +130,7 @@ fn main() {
             let mut user_input:i32 = 0000;
             while user_input > 0 && user_input <= items.len().try_into().unwrap() {
                 user_input = get_userinput_int();
+                println!("testing!");
             }
         }
 
