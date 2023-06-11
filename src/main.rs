@@ -24,51 +24,84 @@ impl TodoList {
     }
 
     fn get_items(&self) -> &[String] {
-        return &self.todos
+        return &self.todos;
     }
+}
+
+fn get_userinput_character () -> char {
+    let mut input_string = String::new();
+    io::stdin()
+        .read_line(&mut input_string)
+        .expect("Can't read values!");
+
+    let user_input_char = match input_string.chars().next() {
+        Some(c) => c,
+        None => {
+            println!("No character entered!");
+            return 'a'; 
+        }
+    };
+    return user_input_char;
+}
+
+fn get_userinput_string () -> String {
+    let mut input_string = String::new();
+    io::stdin()
+        .read_line(&mut input_string)
+        .expect("Can't read values!");
+    return input_string;
 }
 
 
 fn main() {
-    println!("
-              Press 'a' to add a new item to the list.
-              Press 'e' to view the items.
-              Press 'd' to mark a completed item.
-              Press 'D' to delete an item.
-              Press 'q' to quit.");
 
     let mut list = TodoList::new();
-    
+
     loop {
 
-        let mut user_input = String::new();
-        io::stdin()
-            .read_line(&mut user_input)
-            .expect("Can't read values!");
+        println!("
+                 Press 'a' to add a new item to the list.
+                 Press 'e' to view the items.
+                 Press 'd' to mark a completed item.
+                 Press 'D' to delete an item.
+                 Press 'q' to quit."
+                );
 
-        let user_choice = match user_input.chars().next() {
-            Some(c) => c,
-            None => {
-                println!("no character entered");
-                return;
-            }
-        };
-
-        if user_choice == 'q' {
-           break; 
-        }
-        else if user_choice == 'a' {
-            print!("Enter the item you want to add.\n>");
-            let mut new_item = String::new();
-            io::stdin()
-                .read_line(&mut new_item)
-                .expect("Can't read values!");
-            list.add_item(new_item); 
-        }
-        else if user_choice == 'e' {
-            let items = list.get_items();
-        }
+        let user_choice: char;
+        user_choice = get_userinput_character();
         
+        if user_choice == 'q' {
+            break;
+        }
+
+        if user_choice == 'a' {
+            println!("Add items to the list");
+            println!("---------------------");
+            println!("(Type 'exit' to go back)");
+        
+            loop {
+                let user_input = get_userinput_string();
+
+                if user_input.contains("exit") {
+                    break;
+                } else {
+                    list.add_item(user_input);
+                }
+
+            }
+        }
+
+        if user_choice == 'e' {
+            println!("Your todo list");
+            println!("--------------");
+
+            let items = list.get_items();
+            for item in items {
+                print!("{}", item);
+            }
+        }
+
     }
+    println!("Bye!");
 
 }
