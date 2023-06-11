@@ -1,4 +1,5 @@
 use std::io;
+use std::convert::TryInto;
 
 struct TodoList {
     todos: Vec<String>,
@@ -52,6 +53,21 @@ fn get_userinput_string () -> String {
     return input_string;
 }
 
+fn get_userinput_int () -> i32 {
+    let mut input_string = String::new();
+    io::stdin()
+        .read_line(&mut input_string)
+        .expect("Can't read values!");
+    let number: i32 = match input_string.trim().parse() {
+        Ok(num) => num,
+        Err(_) => {
+            println!("Invalid input!");
+            return -1;
+        }
+    };
+    return number;
+}
+
 
 fn main() {
 
@@ -98,6 +114,22 @@ fn main() {
             let items = list.get_items();
             for item in items {
                 print!("{}", item);
+            }
+        }
+
+        if user_choice == 'd' {
+            println!("Which item do you want to mark as completed?");
+            let items = list.get_items();
+            let mut i = 1;
+            for item in items {
+                print!("{}. {}", i, item);
+                i += 1;
+            }
+            // Try to save completed tasks into a separate file
+            // And remove it from the todo list.
+            let mut user_input:i32 = 0000;
+            while user_input > 0 && user_input <= items.len().try_into().unwrap() {
+                user_input = get_userinput_int();
             }
         }
 
