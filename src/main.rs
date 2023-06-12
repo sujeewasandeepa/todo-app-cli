@@ -1,5 +1,7 @@
 use std::io::{self, Read};
 use std::fs::File;
+use std::fs::OpenOptions;
+use std::os::unix::prelude::FileExt;
 
 fn get_userinput_character () -> char {
     let mut input_string = String::new();
@@ -49,10 +51,9 @@ fn display_guide() {
              Press 'q' to quit.
              Press 'h' to view this."
             );
-
 }
 
-fn get_saved_list () -> String {
+fn get_saved_list () -> Vec<String> {
     let file_path = "todolist.txt";
     let mut content = String::new();
     let mut file = match File::open(file_path) {
@@ -63,8 +64,11 @@ fn get_saved_list () -> String {
         Ok(content) => content,
         Err(error) => panic!("Something went wrong while reading! {:?}", error)
     };
-
-    return content;
+    let item_array:Vec<String> = content
+        .split("\n")
+        .map(|item| item.to_string())
+        .collect();
+    return item_array;
 }
 
 
@@ -72,16 +76,22 @@ fn main() {
 
     let mut list: Vec<String> = Vec::new();
 
-    display_guide();
-
-    let mut todolist_file = match File::create("todolist.txt") {
+    let mut todolist_file = match OpenOptions::new()
+        .append(false)
+        .create(true)
+        .open("todolist.txt")
+    {
         Ok(file) => file,
         Err(error) => panic!("Error creating file: {:?}", error),
     };
     
-    let saved_item = get_saved_list();
-    println!("Saved stuff: {}", saved_item);
+    let saved_items = get_saved_list();
+    for saved_item in saved_items {
+        list.push(saved_item);
+    }
     
+    display_guide();
+
     loop {
         
         println!("--> ");
@@ -123,7 +133,7 @@ fn main() {
             }
 
             for item in &list{
-                print!("{}", item);
+                println!("{}", item);
             }
         }
 
@@ -152,6 +162,11 @@ fn main() {
         }
 
     }
+    // fix this
+    match todolist_file.write_all(list.as_bytes()) {
+        Ok(_) => println!("data written"),
+        Err(error) => panic!("Error when writing"),
+    }; 
     println!("Bye!");
 
 }
