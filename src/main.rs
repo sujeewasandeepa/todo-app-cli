@@ -68,20 +68,32 @@ fn get_userinput_int () -> i32 {
     return number;
 }
 
+fn get_items (list:&TodoList) -> &[String] {
+    let items = list.get_items();
+    return &items;
+}
+
+fn display_guide() {
+    println!("
+             Press 'a' to add a new item to the list.
+             Press 'e' to view the items.
+             Press 'd' to to remove the item from the list.
+             Press 'q' to quit.
+             Press 'h' to view this."
+            );
+
+}
+
 
 fn main() {
 
     let mut list = TodoList::new();
 
+    display_guide();
+    
     loop {
-
-        println!("
-                 Press 'a' to add a new item to the list.
-                 Press 'e' to view the items.
-                 Press 'd' to mark a completed item.
-                 Press 'D' to delete an item.
-                 Press 'q' to quit."
-                );
+        
+        println!("--> ");
 
         let user_choice: char;
         user_choice = get_userinput_character();
@@ -107,31 +119,48 @@ fn main() {
             }
         }
 
-        if user_choice == 'e' {
+        else if user_choice == 'e' {
             println!("Your todo list");
             println!("--------------");
 
             let items = list.get_items();
+            
+            if items.len() == 0 {
+                println!("
+                Your list is empty!
+                Press 'a' 
+                to add a new item to the list."
+                )
+            }
+
             for item in items {
                 print!("{}", item);
             }
         }
 
-        if user_choice == 'd' {
+        else if user_choice == 'd' {
             println!("Which item do you want to mark as completed?");
-            let items = list.get_items();
             let mut i = 1;
+            let items = get_items(&list);
             for item in items {
                 print!("{}. {}", i, item);
                 i += 1;
             }
             // Try to save completed tasks into a separate file
             // And remove it from the todo list.
-            let mut user_input:i32 = 0000;
-            while user_input > 0 && user_input <= items.len().try_into().unwrap() {
+            // [1, 2, 3, 4]
+            let mut index:usize = 0;
+            let mut user_input:i32 = get_userinput_int();
+            while user_input <= 0 || user_input > items.len().try_into().unwrap() {
+                println!("Please enter a valid value: ");
                 user_input = get_userinput_int();
-                println!("testing!");
+                index = user_input as usize - 1;
             }
+            list.remove_item(index);
+        }
+
+        else if user_choice == 'h' {
+            display_guide();
         }
 
     }
