@@ -1,33 +1,5 @@
-use std::io;
-use std::convert::TryInto;
-
-struct TodoList {
-    todos: Vec<String>,
-}
-
-impl TodoList {
-    fn new() -> Self {
-        TodoList {
-            todos: Vec::new(),
-        }
-    }
-
-    fn add_item(&mut self, todo: String) {
-        self.todos.push(todo);
-    }
-
-    fn remove_item(&mut self, index: usize) -> Option<String> {
-        if index < self.todos.len() {
-            Some(self.todos.remove(index))
-        } else {
-            None
-        }
-    }
-
-    fn get_items(&self) -> &[String] {
-        return &self.todos;
-    }
-}
+use std::io::{self, Read};
+use std::fs::File;
 
 fn get_userinput_character () -> char {
     let mut input_string = String::new();
@@ -53,25 +25,21 @@ fn get_userinput_string () -> String {
     return input_string;
 }
 
-fn get_userinput_int () -> i32 {
+fn get_userinput_int () -> usize {
     let mut input_string = String::new();
     io::stdin()
         .read_line(&mut input_string)
         .expect("Can't read values!");
-    let number: i32 = match input_string.trim().parse() {
+    let number:usize = match input_string.trim().parse() {
         Ok(num) => num,
         Err(_) => {
             println!("Invalid input!");
-            return -1;
+            return 0;
         }
     };
     return number;
 }
 
-fn get_items (list:&TodoList) -> &[String] {
-    let items = list.get_items();
-    return &items;
-}
 
 fn display_guide() {
     println!("
@@ -84,12 +52,35 @@ fn display_guide() {
 
 }
 
+fn get_saved_list () -> String {
+    let file_path = "todolist.txt";
+    let mut content = String::new();
+    let mut file = match File::open(file_path) {
+        Ok(file) => file,
+        Err(error) => panic!("Can't read file! {:?}", error),
+    }; 
+    match file.read_to_string(&mut content) {
+        Ok(content) => content,
+        Err(error) => panic!("Something went wrong while reading! {:?}", error)
+    };
+
+    return content;
+}
+
 
 fn main() {
 
-    let mut list = TodoList::new();
+    let mut list: Vec<String> = Vec::new();
 
     display_guide();
+
+    let mut todolist_file = match File::create("todolist.txt") {
+        Ok(file) => file,
+        Err(error) => panic!("Error creating file: {:?}", error),
+    };
+    
+    let saved_item = get_saved_list();
+    println!("Saved stuff: {}", saved_item);
     
     loop {
         
@@ -113,7 +104,7 @@ fn main() {
                 if user_input.contains("exit") {
                     break;
                 } else {
-                    list.add_item(user_input);
+                    list.push(user_input);
                 }
 
             }
@@ -123,9 +114,7 @@ fn main() {
             println!("Your todo list");
             println!("--------------");
 
-            let items = list.get_items();
-            
-            if items.len() == 0 {
+            if list.len() == 0 {
                 println!("
                 Your list is empty!
                 Press 'a' 
@@ -133,7 +122,7 @@ fn main() {
                 )
             }
 
-            for item in items {
+            for item in &list{
                 print!("{}", item);
             }
         }
@@ -141,8 +130,7 @@ fn main() {
         else if user_choice == 'd' {
             println!("Which item do you want to mark as completed?");
             let mut i = 1;
-            let items = get_items(&list);
-            for item in items {
+            for item in &list{
                 print!("{}. {}", i, item);
                 i += 1;
             }
@@ -150,13 +138,13 @@ fn main() {
             // And remove it from the todo list.
             // [1, 2, 3, 4]
             let mut index:usize = 0;
-            let mut user_input:i32 = get_userinput_int();
-            while user_input <= 0 || user_input > items.len().try_into().unwrap() {
+            let mut user_input = get_userinput_int();
+            while user_input <= 0 || user_input > list.len() {
                 println!("Please enter a valid value: ");
                 user_input = get_userinput_int();
                 index = user_input as usize - 1;
             }
-            list.remove_item(index);
+            list.remove(index);
         }
 
         else if user_choice == 'h' {
