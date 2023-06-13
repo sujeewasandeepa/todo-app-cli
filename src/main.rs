@@ -55,6 +55,7 @@ Press 'h' to view this."
 fn get_saved_list () -> Vec<String> {
     let file_path = "todolist.txt";
     let mut content = String::new();
+
     let mut file = match File::open(file_path) {
         Ok(file) => file,
         Err(error) => panic!("Can't read file! {:?}", error),
@@ -88,6 +89,7 @@ fn main() {
     for saved_item in saved_items {
         list.push(saved_item);
     }
+    println!("{:?}", list);
     // here we get rid of all the empty strings
     list.retain(|s| !s.is_empty());
     
@@ -122,14 +124,19 @@ fn main() {
             println!("---------------------");
             println!("(Type 'exit' to go back)");
         
+// the issue is we don't have newline characters written to the file
+// so when reading the file, we don't see newlines. 
+// without newlines we can't identify each item separately. 
             loop {
                 let user_input = get_userinput_string();
 
                 if user_input.contains("exit") {
                     break;
                 } else {
-                    let _todolistfile = todolist_file.write_all(user_input.as_bytes());
+                    let user_input_clone = user_input.clone();
                     list.push(user_input);
+                    let user_input_with_newline = user_input_clone + "\n";
+                    let _todolistfile = todolist_file.write_all(user_input_with_newline.as_bytes());
                 }
             }
             // here we get rid of all the empty strings
@@ -151,7 +158,6 @@ fn main() {
 
             // here we get rid of all the empty strings
             list.retain(|s| !s.is_empty());
-
             for item in &list{
                 println!("{}", item);
             }
@@ -165,19 +171,15 @@ fn main() {
                 i += 1;
             }
 
-            // [1, 2, 3, 4]
             let mut index:usize = 0;
             let mut user_input = get_userinput_int();
+
             while user_input <= 0 || user_input > list.len() {
                 println!("Please enter a valid value: ");
                 user_input = get_userinput_int();
                 index = user_input as usize - 1;
             }
             list.remove(index);
-            for line in &list {
-                let _todolistfile = todolist_file.write_all(line.as_bytes());
-                let _todolistfilewritenewline = todolist_file.write_all(b"\n");
-            }
         }
 
         else if user_choice == 'h' {
