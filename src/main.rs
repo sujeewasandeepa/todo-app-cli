@@ -23,7 +23,7 @@ fn get_userinput_string () -> String {
     io::stdin()
         .read_line(&mut input_string)
         .expect("Can't read values!");
-    return input_string;
+    return input_string.trim().to_string();
 }
 
 fn get_userinput_int () -> usize {
@@ -44,11 +44,11 @@ fn get_userinput_int () -> usize {
 
 fn display_guide() {
     println!("
-             Press 'a' to add a new item to the list.
-             Press 'e' to view the items.
-             Press 'd' to to remove the item from the list.
-             Press 'q' to quit.
-             Press 'h' to view this."
+Press 'a' to add a new item to the list.
+Press 'e' to view the items.
+Press 'd' to to remove the item from the list.
+Press 'q' to quit.
+Press 'h' to view this."
             );
 }
 
@@ -88,7 +88,22 @@ fn main() {
     for saved_item in saved_items {
         list.push(saved_item);
     }
+    // here we get rid of all the empty strings
+    list.retain(|s| !s.is_empty());
     
+    println!("
+
+
+████████╗ ██████╗     ██████╗  ██████╗ 
+╚══██╔══╝██╔═══██╗    ██╔══██╗██╔═══██╗
+   ██║   ██║   ██║    ██║  ██║██║   ██║
+   ██║   ██║   ██║    ██║  ██║██║   ██║
+   ██║   ╚██████╔╝    ██████╔╝╚██████╔╝
+   ╚═╝    ╚═════╝     ╚═════╝  ╚═════╝ 
+                                       
+
+              ");
+
     display_guide();
 
     loop {
@@ -113,10 +128,13 @@ fn main() {
                 if user_input.contains("exit") {
                     break;
                 } else {
+                    let _todolistfile = todolist_file.write_all(user_input.as_bytes());
                     list.push(user_input);
                 }
-
             }
+            // here we get rid of all the empty strings
+            list.retain(|s| !s.is_empty());
+            display_guide();
         }
 
         else if user_choice == 'e' {
@@ -131,6 +149,9 @@ fn main() {
                 )
             }
 
+            // here we get rid of all the empty strings
+            list.retain(|s| !s.is_empty());
+
             for item in &list{
                 println!("{}", item);
             }
@@ -140,11 +161,10 @@ fn main() {
             println!("Which item do you want to mark as completed?");
             let mut i = 1;
             for item in &list{
-                print!("{}. {}", i, item);
+                println!("{}. {}", i, item);
                 i += 1;
             }
-            // Try to save completed tasks into a separate file
-            // And remove it from the todo list.
+
             // [1, 2, 3, 4]
             let mut index:usize = 0;
             let mut user_input = get_userinput_int();
@@ -154,6 +174,10 @@ fn main() {
                 index = user_input as usize - 1;
             }
             list.remove(index);
+            for line in &list {
+                let _todolistfile = todolist_file.write_all(line.as_bytes());
+                let _todolistfilewritenewline = todolist_file.write_all(b"\n");
+            }
         }
 
         else if user_choice == 'h' {
@@ -161,11 +185,7 @@ fn main() {
         }
 
     }
-    // fix this
-    for line in list {
-        let _todolistfile = todolist_file.write_all(line.as_bytes());
-        let _todolistfilewritenewline = todolist_file.write_all(b"\n");
-    }
+
     println!("Bye!");
 
 }
