@@ -1,7 +1,6 @@
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use std::fs::File;
 use std::fs::OpenOptions;
-use std::os::unix::prelude::FileExt;
 
 fn get_userinput_character () -> char {
     let mut input_string = String::new();
@@ -77,7 +76,7 @@ fn main() {
     let mut list: Vec<String> = Vec::new();
 
     let mut todolist_file = match OpenOptions::new()
-        .append(false)
+        .append(true)
         .create(true)
         .open("todolist.txt")
     {
@@ -163,10 +162,10 @@ fn main() {
 
     }
     // fix this
-    match todolist_file.write_all(list.as_bytes()) {
-        Ok(_) => println!("data written"),
-        Err(error) => panic!("Error when writing"),
-    }; 
+    for line in list {
+        let _todolistfile = todolist_file.write_all(line.as_bytes());
+        let _todolistfilewritenewline = todolist_file.write_all(b"\n");
+    }
     println!("Bye!");
 
 }

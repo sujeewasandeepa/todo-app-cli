@@ -1,2 +1,9 @@
 Call Amaya
 Call myself
+Call Amaya
+Call myself
+
+Call amaya new
+
+Call myself new
+
