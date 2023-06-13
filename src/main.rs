@@ -1,5 +1,5 @@
-use std::io::{self, Read, Write};
-use std::fs::File;
+use std::io::{self, Read, Write, BufReader, BufRead};
+use std::fs::{File, write};
 use std::fs::OpenOptions;
 
 fn get_userinput_character () -> char {
@@ -23,7 +23,8 @@ fn get_userinput_string () -> String {
     io::stdin()
         .read_line(&mut input_string)
         .expect("Can't read values!");
-    return input_string.trim().to_string();
+    //return input_string.trim().to_string();
+    return input_string;
 }
 
 fn get_userinput_int () -> usize {
@@ -52,23 +53,23 @@ Press 'h' to view this."
             );
 }
 
-fn get_saved_list () -> Vec<String> {
+fn get_saved_list () -> String {
     let file_path = "todolist.txt";
-    let mut content = String::new();
+    let mut content = String::new(); 
 
     let mut file = match File::open(file_path) {
         Ok(file) => file,
         Err(error) => panic!("Can't read file! {:?}", error),
     }; 
-    match file.read_to_string(&mut content) {
-        Ok(content) => content,
-        Err(error) => panic!("Something went wrong while reading! {:?}", error)
-    };
-    let item_array:Vec<String> = content
-        .split("\n")
-        .map(|item| item.to_string())
-        .collect();
-    return item_array;
+
+    let _read_result = file.read_to_string(&mut content);
+    
+    return content;
+  // let item_array:Vec<String> = content
+  //     .split("\n")
+  //     .map(|item| item.to_string())
+  //     .collect();
+  // return item_array;
 }
 
 
@@ -76,8 +77,12 @@ fn main() {
 
     let mut list: Vec<String> = Vec::new();
 
+    let saved_items = get_saved_list();
+    list.push(saved_items);
+
     let mut todolist_file = match OpenOptions::new()
-        .append(true)
+        .write(true)
+        .truncate(true)
         .create(true)
         .open("todolist.txt")
     {
@@ -85,10 +90,10 @@ fn main() {
         Err(error) => panic!("Error creating file: {:?}", error),
     };
     
-    let saved_items = get_saved_list();
-    for saved_item in saved_items {
-        list.push(saved_item);
-    }
+
+   // for saved_item in saved_items {
+   //     list.push(saved_item);
+   // }
     println!("{:?}", list);
     // here we get rid of all the empty strings
     list.retain(|s| !s.is_empty());
@@ -133,10 +138,7 @@ fn main() {
                 if user_input.contains("exit") {
                     break;
                 } else {
-                    let user_input_clone = user_input.clone();
                     list.push(user_input);
-                    let user_input_with_newline = user_input_clone + "\n";
-                    let _todolistfile = todolist_file.write_all(user_input_with_newline.as_bytes());
                 }
             }
             // here we get rid of all the empty strings
@@ -159,7 +161,7 @@ fn main() {
             // here we get rid of all the empty strings
             list.retain(|s| !s.is_empty());
             for item in &list{
-                println!("{}", item);
+                print!("{}", item);
             }
         }
 
@@ -171,8 +173,9 @@ fn main() {
                 i += 1;
             }
 
-            let mut index:usize = 0;
+            let mut index:usize;
             let mut user_input = get_userinput_int();
+            index = user_input-1;
 
             while user_input <= 0 || user_input > list.len() {
                 println!("Please enter a valid value: ");
@@ -188,6 +191,10 @@ fn main() {
 
     }
 
+    for item in &list {
+        let _writefile = write!(todolist_file, "{}", item);
+    }
+    let _file_flush = todolist_file.flush();
     println!("Bye!");
 
 }
